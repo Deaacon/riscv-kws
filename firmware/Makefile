@@ -1,5 +1,6 @@
 ARCH    ?= esp32c3
 PROG    ?= firmware
+OUT_DIR  = .output
 
 CC       = riscv32-unknown-elf-gcc
 LD       = riscv32-unknown-elf-ld
@@ -16,26 +17,30 @@ ESPFLAGS = --chip $(ARCH)
 ESPTOOL  = python -m esptool
 ESPMON   = python -m esp_idf_monitor
 
-SRCS = $(wildcard src/*.c) \
-       $(wildcard device/*.c)
-OBJS = $(SRCS:.c=.o)
+SRCS     = $(wildcard src/*.c) \
+           $(wildcard device/*.c)
+OBJS     = $(patsubst %.c, $(OUT_DIR)/%.o, $(SRCS))
 
-all: $(PROG).bin
+BIN      = $(OUT_DIR)/$(PROG).bin
+ELF      = $(OUT_DIR)/$(PROG).elf
 
-$(PROG).bin: $(PROG).elf
-	$(ESPTOOL) $(ESPFLAGS) elf2image $(PROG).elf
+all: $(BIN)
 
-$(PROG).elf: $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $(PROG).elf
+$(BIN): $(ELF)
+	$(ESPTOOL) $(ESPFLAGS) elf2image $(ELF)
 
-%.o: %.c
+$(ELF): $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) -o $(ELF)
+
+$(OUT_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-flash: $(PROG).bin
-	$(ESPTOOL) $(ESPFLAGS) write_flash --flash_mode dio 0x0 $(PROG).bin
+flash: $(BIN)
+	$(ESPTOOL) $(ESPFLAGS) write_flash --flash_mode dio 0x0 $(BIN)
 
 monitor:
 	$(ESPMON)
 
 clean:
-	rm -f $(OBJS) $(PROG).elf $(PROG).bin
+	rm -rf $(OUT_DIR)
