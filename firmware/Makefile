@@ -1,17 +1,23 @@
-PROG  = firmware
+ARCH    ?= esp32c3
+PROG    ?= firmware
+
 CC       = riscv32-unknown-elf-gcc
 LD       = riscv32-unknown-elf-ld
+
 CFLAGS   = -W -Wall -march=rv32imc -mabi=ilp32 \
            -fno-builtin -Os \
            -ffunction-sections -fdata-sections \
-           -I.
-LDFLAGS  = -T link.ld -nostdlib -nostartfiles \
+           -Iinc -Imodel -Idevice/$(ARCH)
+LDFLAGS  = -T device/$(ARCH)/link.ld \
+           -nostdlib -nostartfiles \
            -Wl,--gc-sections
-ESPFLAGS = --chip esp32c3
+
+ESPFLAGS = --chip $(ARCH)
 ESPTOOL  = python -m esptool
 ESPMON   = python -m esp_idf_monitor
 
-SRCS = main.c startup.c
+SRCS = $(wildcard src/*.c) \
+       $(wildcard device/*.c)
 OBJS = $(SRCS:.c=.o)
 
 all: $(PROG).bin
@@ -32,4 +38,4 @@ monitor:
 	$(ESPMON)
 
 clean:
-	rm -f *.o *.elf *.bin
+	rm -f $(OBJS) $(PROG).elf $(PROG).bin
