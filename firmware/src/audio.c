@@ -29,7 +29,8 @@ int16_t audio_read_raw(void) {
 
 void audio_fill_buffer(int16_t *buffer, uint32_t len) {
     for (uint32_t i = 0; i < len; i++) {
-        buffer[i] = audio_read_raw();
+        // buffer[i] = audio_read_raw();
+        buffer[i] = i % 32768; // Заглушка для тестирования
         // for (volatile int d = 0; d < 2000; d++);
     }
 }
@@ -80,9 +81,9 @@ void audio_get_spectrogram(int16_t *samples, int16_t *output_spectrogram) {
         // 3. Вычисление амплитуды (tf.abs)
         printf("INFO: computing abs\n");
         for (int i = 0; i < (FFT_SIZE / 2 + 1); i++) {
-            float re = freqdata[i].r;
-            float im = freqdata[i].i;
-            float magnitude = sqrtf(re * re + im * im);
+            kiss_fft_scalar re = freqdata[i].r;
+            kiss_fft_scalar im = freqdata[i].i;
+            kiss_fft_scalar magnitude = sqrtf(re * re + im * im);
 
             // Записываем в выходной массив (сплющенная спектрограмма)
             output_spectrogram[frame * (FFT_SIZE / 2 + 1) + i] = magnitude;
