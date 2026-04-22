@@ -10,8 +10,8 @@ __attribute__((section(".entry_addr")))
 void _start(void) {
     __asm__ volatile ("mv sp, %0" : : "r"(&_stack_top));
 
-    uint32_t *bss = &_bss_start;
-    while (bss < &_bss_end) {
+    uint8_t *bss = (uint8_t*)&_bss_start;
+    while (bss < (uint8_t*)&_bss_end) {
         *bss++ = 0;
     }
 

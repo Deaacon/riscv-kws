@@ -34,34 +34,42 @@ void audio_fill_buffer(int16_t *buffer, uint32_t len) {
     }
 }
 
+static kiss_fftr_cfg cfg = NULL;
 static uint8_t fft_buffer[2048] __attribute__((aligned(16)));
-static kiss_fftr_cfg cfg;
 
 void audio_get_spectrogram(int16_t *samples, int16_t *output_spectrogram) {
     // Настройка KissFFT (нужно вызвать один раз, можно сделать статическим)
     printf("INFO: getting spectrogram\n");
-    static kiss_fftr_cfg cfg = NULL;
+    printf("Current cfg value: %p\n", (void*)cfg);
+
+    static uint8_t first_run = 1;
+    if (first_run) {
+        cfg = NULL;
+        first_run = 0;
+    }
+
     if (cfg == NULL) {
+        printf("INFO: allocating FFT config\n");
         size_t needed_size = sizeof(fft_buffer);
+        printf("needed_size: %zu\n", needed_size);
         cfg = kiss_fftr_alloc(FFT_SIZE, 0, fft_buffer, &needed_size);
     }
 
     static kiss_fft_scalar timedata[FFT_SIZE];
     static kiss_fft_cpx freqdata[FFT_SIZE / 2 + 1];
 
-    if (cfg == NULL) { printf("ALARM: CFG IS NULL"); }
     printf("CFG Address: %p\n", cfg);
     printf("INFO: performing computation\n");
+
     for (int frame = 0; frame < SPECTROGRAM_FRAMES; frame++) {
         // 1. Подготовка кадра (Windowing)
         printf("INFO: windowing frame\n");
         for (int i = 0; i < FFT_SIZE; i++) {
             int sample_idx = frame * 128 + i;
-            if (i < 255 && sample_idx < 16000) {
-                // В Python версии нет окна Хэмминга, просто копируем
-                timedata[i] = (float)samples[sample_idx];
+            if (sample_idx < AUDIO_SAMPLE_RATE) {
+                timedata[i] = (kiss_fft_scalar)samples[sample_idx];
             } else {
-                timedata[i] = 0.0f; // Padding
+                timedata[i] = 0;
             }
         }
 

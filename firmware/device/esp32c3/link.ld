@@ -30,7 +30,13 @@ SECTIONS
         _bss_end = .;
     } > ram
 
-    _stack_top = ORIGIN(ram) + LENGTH(ram);
+    .stack (NOLOAD) :
+    {
+        . = ALIGN(16);
+        _stack_bottom = .;
+        . += 0x4000;
+        _stack_top = .;
+    } > ram
 }
 
 PROVIDE(printf = 0x40000040);

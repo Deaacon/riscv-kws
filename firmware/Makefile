@@ -8,7 +8,7 @@ LD       = riscv32-unknown-elf-ld
 TFLM_DIR = lib/tflm
 
 ARCHFLAGS = -march=rv32imc -mabi=ilp32
-CFLAGS   = -W -Wall $(ARCHFLAGS) \
+CFLAGS   = -W -Wall $(ARCHFLAGS) -g \
            -fno-builtin -Os \
            -ffunction-sections -fdata-sections \
            -Iinc -Imodel -Idevice/$(ARCH) \
