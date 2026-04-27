@@ -39,6 +39,10 @@ SECTIONS
     } > ram
 }
 
+INCLUDE "esp32c3.peripherals.ld"
+INCLUDE "esp32c3.rom.api.ld"
+INCLUDE "esp32c3.rom.ld"
+
 PROVIDE(memset = 0x40000354);
 PROVIDE(memcpy = 0x40000358);
 PROVIDE(memmove = 0x4000035c);
