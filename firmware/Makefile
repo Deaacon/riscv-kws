@@ -11,12 +11,14 @@ ARCHFLAGS = -march=rv32imc -mabi=ilp32
 CFLAGS   = -W -Wall $(ARCHFLAGS) -g \
            -fno-builtin -Os \
            -ffunction-sections -fdata-sections \
-           -Iinc -Imodel -Idevice/$(ARCH) \
+           -Iinc -Imodel -Idevice/$(ARCH) -Idevice \
+           -isystem device/$(ARCH) -isystem device \
            -DFIXED_POINT=16 \
            -I$(TFLM_DIR) \
            -I$(TFLM_DIR)/third_party/kissfft \
            -I$(TFLM_DIR)/third_party/kissfft/tools
-    LDFLAGS  = -T device/$(ARCH)/link.ld $(ARCHFLAGS) -g \
+LDFLAGS  = -T device/$(ARCH)/link.ld $(ARCHFLAGS) -g \
+           -L./device/$(ARCH)/ld \
            -nostdlib -nostartfiles \
            -Wl,--gc-sections
 
@@ -27,7 +29,8 @@ ESPMON   = python -m esp_idf_monitor
 SRCS     = $(wildcard src/*.c) \
            $(wildcard device/*.c) \
            $(wildcard lib/tflm/third_party/kissfft/tools/*.c) \
-           $(wildcard lib/tflm/third_party/kissfft/*.c)
+           $(wildcard lib/tflm/third_party/kissfft/*.c) \
+           $(wildcard device/$(ARCH)/*.c)
 OBJS     = $(patsubst %.c, $(OUT_DIR)/%.o, $(SRCS))
 
 BIN      = $(OUT_DIR)/$(PROG).bin

@@ -22,12 +22,34 @@ int main(void) {
     printf("\nHello World!\n");
     gpio_output(led_pin);
 
-    while (1) {
-        printf("Filling buffer\n");
-        audio_fill_buffer(raw_buffer, SAMPLES);
+    // bck_pin = 5 (физически на SCK микрофона)
+    // ws_pin = 4  (физически на WS микрофона)
+    // sd_pin = 6  (данные)
+    audio_init(5, 4, 6);
 
-        printf("Getting spectrogram\n");
-        audio_get_spectrogram(raw_buffer, feature_buffer);
+    printf("Audio system initialized. Starting record...\n");
+
+    while (1) {
+        if (audio_is_segment_ready()) {
+            // Получаем указатель на начало буфера
+            int16_t* buffer = audio_get_buffer();
+
+            // Обрабатываем данные (например, считаем среднюю громкость сегмента)
+            long sum = 0;
+            for (int i = 0; i < SAMPLES_200MS; i++) {
+                // Берем модуль значения (амплитуду)
+                sum += (buffer[i] < 0) ? -buffer[i] : buffer[i];
+            }
+
+            int avg_amplitude = sum / SAMPLES_200MS;
+            printf("Segment ready! Avg Amplitude: %d\n", avg_amplitude);
+        }
+
+        // printf("Filling buffer\n");
+        // audio_fill_buffer(raw_buffer, SAMPLES);
+
+        // printf("Getting spectrogram\n");
+        // audio_get_spectrogram(raw_buffer, feature_buffer);
 
         // Запуск нейросети
         // copy_to_tensor_arena(feature_buffer);
