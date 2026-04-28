@@ -1,7 +1,6 @@
 #ifndef SDKCONFIG_H
 #define SDKCONFIG_H
 
-// Пустое для сохраниния совместимости с существующим кодом,
-// который может включать этот файл.
+CONFIG_IDF_TARGET_ESP32_C3
 
 #endif
