@@ -3,10 +3,40 @@
 #include "driver/i2s_std.h"
 #include "kiss_fftr.h"
 
+
+#include "driver/i2s_std.h"
+#include "driver/gpio.h"
+
+i2s_chan_handle_t rx_handle;
+i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+i2s_std_config_t std_cfg = {
+    .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(48000),
+    .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
+    .gpio_cfg = {
+        .mclk = I2S_GPIO_UNUSED,
+        .bclk = GPIO_NUM_4,
+        .ws = GPIO_NUM_5,
+        .dout = I2S_GPIO_UNUSED,
+        .din = GPIO_NUM_19,
+        .invert_flags = {
+            .mclk_inv = false,
+            .bclk_inv = false,
+            .ws_inv = false,
+        },
+    },
+};
+
 void audio_init(int bck_pin, int ws_pin, int sd_pin) {
+    i2s_new_channel(&chan_cfg, NULL, &rx_handle);
+    i2s_channel_init_std_mode(rx_handle, &std_cfg);
 }
 
 bool audio_is_segment_ready(void) {
+}
+
+int16_t audio_read_raw(void) {
+    i2s_channel_enable(rx_handle);
+    i2s_channel_read(rx_handle, desc_buf, bytes_to_read, bytes_read, ticks_to_wait);
 }
 
 void audio_fill_buffer(int16_t *buffer, uint32_t len) {
